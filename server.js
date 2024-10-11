@@ -39,21 +39,27 @@ import {filterImageFromURL, deleteLocalFiles} from './util/util.js';
   
   app.get( "/filteredimage", async (req, res) => {
     const urlImage = req.query.image_url
-    filterImageFromURL(urlImage).then(
-      rs => {
-        deleteLocalFiles([rs]);
-        res.send({
-          status: '200',
-          message: 'image_url is valid.'
-        })
-      }).catch(
-        _error => {
-          res.status(422).json({
-            status: '422',
-            message: 'image_url is invalid.',
-        });
-        }
-      );
+    if (urlImage) {
+      filterImageFromURL(urlImage).then(
+        rs => {
+          res.sendFile(rs);
+          setTimeout(() => {
+            deleteLocalFiles([rs]);
+          },250);
+        }).catch(
+          _error => {
+            res.status(422).json({
+              status: '422',
+              message: 'image_url is invalid.',
+          });
+          }
+        );
+    } else {
+      res.status(404).json({
+        status: '404',
+        message: 'Missing image_url parameter.',
+    });
+    }
   } );
 
   // Start the Server
